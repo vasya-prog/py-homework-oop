@@ -1,5 +1,4 @@
 # Домашнее задание по теме "ООП: наследование, инкапсуляция, полиморфизм"
-
 class Student:
     """Класс для описания студента."""
 
@@ -13,7 +12,6 @@ class Student:
 
     def rate_hw(self, lecturer, course, grade):
         """Метод для выставления оценки лектору за домашнее задание."""
-        # проверка что оценим только своего лектора
         if isinstance(lecturer, Lecturer) and \
                 course in self.courses_in_progress and \
                 course in lecturer.courses_attached:
@@ -33,29 +31,29 @@ class Mentor:
         self.surname = surname
         self.courses_attached = []
 
-    def rate_hw(self, student, course, grade):
-        """Метод для выставления оценки студенту за домашнее задание."""
-        # проверяем что оценим своего студента
-        if isinstance(student, Student) and \
-                course in self.courses_attached and \
-                course in student.courses_in_progress:
-            if course in student.grades:
-                student.grades[course] += [grade]
-            else:
-                student.grades[course] = [grade]
-        else:
-            return 'Ошибка'
+
+# теперь Mentor - родительский класс, от него наследуем
+class Lecturer(Mentor):
+    """Класс лектора. Наследуется от Mentor."""
+
+    def __init__(self, name, surname):
+        super().__init__(name, surname)
+        # у лектора будут хранить оценки за его лекции
+        self.grades = {}
 
 
-# тестовые данные для проверки
-best_student = Student('Ruoy', 'Eman', 'your_gender')
-best_student.courses_in_progress += ['Python']
+class Reviewer(Mentor):
+    """Класс проверяющего. Наследуется от Mentor."""
 
-cool_mentor = Mentor('Some', 'Buddy')
-cool_mentor.courses_attached += ['Python']
+    def __init__(self, name, surname):
+        super().__init__(name, surname)
 
-cool_mentor.rate_hw(best_student, 'Python', 10)
-cool_mentor.rate_hw(best_student, 'Python', 10)
-cool_mentor.rate_hw(best_student, 'Python', 10)
 
-print(best_student.grades)
+# проверка что наследование работает
+lecturer = Lecturer('Иван', 'Иванов')
+reviewer = Reviewer('Пётр', 'Петров')
+
+print(isinstance(lecturer, Mentor))  # True
+print(isinstance(reviewer, Mentor))  # True
+print(lecturer.courses_attached)     # []
+print(reviewer.courses_attached)     # []
