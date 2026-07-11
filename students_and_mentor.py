@@ -22,10 +22,8 @@ class Student:
         else:
             return 'Ошибка'
 
-    # новый метод - студент может оценить лекцию
     def rate_lecture(self, lecturer, course, grade):
         """Метод для выставления оценки лектору за лекцию."""
-        # проверяем что оценим именно лектора, а не кого попало
         if isinstance(lecturer, Lecturer) and \
                 course in self.courses_in_progress and \
                 course in lecturer.courses_attached:
@@ -35,6 +33,40 @@ class Student:
                 lecturer.grades[course] = [grade]
         else:
             return 'Ошибка'
+
+    # считаем среднюю оценку по всем домашкам
+    def _get_average_grade(self):
+        """Вспомогательный метод для подсчёта средней оценки."""
+        all_grades = []
+        for grades_list in self.grades.values():
+            all_grades.extend(grades_list)
+        if not all_grades:
+            return 0
+        return sum(all_grades) / len(all_grades)
+
+    # переопределяем str
+    def __str__(self):
+        # форматируем курсы через запятую
+        in_progress = ', '.join(self.courses_in_progress)
+        finished = ', '.join(self.finished_courses)
+        avg = self._get_average_grade()
+        return (
+            f'Имя: {self.name}\n'
+            f'Фамилия: {self.surname}\n'
+            f'Средняя оценка за домашние задания: {avg}\n'
+            f'Курсы в процессе изучения: {in_progress}\n'
+            f'Завершенные курсы: {finished}'
+        )
+
+    # сравнение студентов - по средней оценке
+    def __lt__(self, other):
+        return self._get_average_grade() < other._get_average_grade()
+
+    def __gt__(self, other):
+        return self._get_average_grade() > other._get_average_grade()
+
+    def __eq__(self, other):
+        return self._get_average_grade() == other._get_average_grade()
 
 
 class Mentor:
@@ -53,6 +85,34 @@ class Lecturer(Mentor):
         super().__init__(name, surname)
         self.grades = {}
 
+    # средняя оценка за лекции
+    def _get_average_grade(self):
+        """Вспомогательный метод для подсчёта средней оценки за лекции."""
+        all_grades = []
+        for grades_list in self.grades.values():
+            all_grades.extend(grades_list)
+        if not all_grades:
+            return 0
+        return sum(all_grades) / len(all_grades)
+
+    def __str__(self):
+        avg = self._get_average_grade()
+        return (
+            f'Имя: {self.name}\n'
+            f'Фамилия: {self.surname}\n'
+            f'Средняя оценка за лекции: {avg}'
+        )
+
+    # сравнение лекторов - тоже по средней оценке
+    def __lt__(self, other):
+        return self._get_average_grade() < other._get_average_grade()
+
+    def __gt__(self, other):
+        return self._get_average_grade() > other._get_average_grade()
+
+    def __eq__(self, other):
+        return self._get_average_grade() == other._get_average_grade()
+
 
 class Reviewer(Mentor):
     """Класс проверяющего. Наследуется от Mentor."""
@@ -60,7 +120,6 @@ class Reviewer(Mentor):
     def __init__(self, name, surname):
         super().__init__(name, surname)
 
-    # метод rate_hw теперь только у Reviewer
     def rate_hw(self, student, course, grade):
         """Метод для выставления оценки студенту за домашнее задание."""
         if isinstance(student, Student) and \
@@ -73,20 +132,26 @@ class Reviewer(Mentor):
         else:
             return 'Ошибка'
 
+    # у проверяющего самый простой str
+    def __str__(self):
+        return f'Имя: {self.name}\nФамилия: {self.surname}'
 
-# проверяем как работает
-lecturer = Lecturer('Иван', 'Иванов')
+
+# быстрая проверка магических методов
+lecturer1 = Lecturer('Иван', 'Иванов')
+lecturer2 = Lecturer('Мария', 'Сидорова')
 reviewer = Reviewer('Пётр', 'Петров')
-student = Student('Алёхина', 'Ольга', 'Ж')
+student1 = Student('Ольга', 'Алёхина', 'Ж')
+student2 = Student('Дмитрий', 'Борисов', 'М')
 
-student.courses_in_progress += ['Python', 'Java']
-lecturer.courses_attached += ['Python', 'C++']
-reviewer.courses_attached += ['Python', 'C++']
+# проверяем __str__
+print(reviewer)
+print()
+print(lecturer1)
+print()
+print(student1)
 
-# студент оценивает лекции
-print(student.rate_lecture(lecturer, 'Python', 7))  # None - ок
-print(student.rate_lecture(lecturer, 'Java', 8))    # Ошибка - лектор не ведёт Java
-print(student.rate_lecture(lecturer, 'C++', 8))     # Ошибка - студент не изучает C++
-print(student.rate_lecture(reviewer, 'Python', 6))  # Ошибка - это не лектор
-
-print(lecturer.grades)  # {'Python': [7]}
+# проверяем сравнение
+print()
+print('Сравнение лекторов:', lecturer1 > lecturer2)
+print('Сравнение студентов:', student1 < student2)
