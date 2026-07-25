@@ -222,28 +222,44 @@ print()
 # ===================== ПРОВЕРКА ОШИБОК =====================
 print('\n=== Проверка некорректных оценок ===\n')
 
-# --- Сценарий 1: Проверяющий оценивает студента по курсу, который не ведёт ---
-# reviewer1 (Пётр Петров) ведёт 'Python' и 'Git', а student2 (Дмитрий Борисов) изучает 'Python' и 'Java'
-# Курс 'Java' не закреплён за проверяющим reviewer1
-error_1 = reviewer1.rate_hw(student2, 'Java', 10)
-print(f"1. Проверяющий {reviewer1.name} {reviewer1.surname} пытается оценить студента "
-      f"{student2.name} {student2.surname} по курсу 'Java'.")
-print(f"   Результат: {error_1}")
-print(f"   Причина: курс 'Java' не закреплён за проверяющим {reviewer1.surname}. "
-      f"Проверяющий может оценивать студентов только по тем курсам, которые ведёт.\n")
+# --- Сценарий 1: Проверяющий оценивает студента по курсу, который проверяющий не ведёт ---
+# Находим курс, который студент изучает, но проверяющий не ведёт
+invalid_course_1 = None
+for course in student2.courses_in_progress:
+    if course not in reviewer1.courses_attached:
+        invalid_course_1 = course
+        break
 
-# --- Сценарий 2: Студент оценивает лектора по курсу, который не изучает ---
-# student1 (Ольга Алёхина) изучает 'Python' и 'Git', а lecturer2 (Мария Сидорова) ведёт 'Python' и 'Java'
-# Курс 'Java' не изучается студентом student1
-error_2 = student1.rate_lecture(lecturer2, 'Java', 9)
-print(f"2. Студент {student1.name} {student1.surname} пытается оценить лектора "
-      f"{lecturer2.name} {lecturer2.surname} по курсу 'Java'.")
-print(f"   Результат: {error_2}")
-print(f"   Причина: студент {student1.surname} не изучает курс 'Java'. "
-      f"Студент может оценивать лекторов только по тем курсам, которые посещает.\n")
+if invalid_course_1:
+    error_1 = reviewer1.rate_hw(student2, invalid_course_1, 10)
+    print(f"1. Проверяющий {reviewer1.name} {reviewer1.surname} пытается оценить студента "
+          f"{student2.name} {student2.surname} по курсу '{invalid_course_1}'.")
+    print(f"   Результат: {error_1}")
+    print(f"   Причина: курс '{invalid_course_1}' не закреплён за проверяющим {reviewer1.surname}. "
+          f"Проверяющий может оценивать студентов только по тем курсам, которые ведёт.\n")
+else:
+    print("1. Невозможно создать сценарий: все курсы студента также ведутся проверяющим.\n")
+
+# --- Сценарий 2: Студент оценивает лектора по курсу, который студент не изучает ---
+# Находим курс, который лектор ведёт, но студент не изучает
+invalid_course_2 = None
+for course in lecturer2.courses_attached:
+    if course not in student1.courses_in_progress:
+        invalid_course_2 = course
+        break
+
+if invalid_course_2:
+    error_2 = student1.rate_lecture(lecturer2, invalid_course_2, 9)
+    print(f"2. Студент {student1.name} {student1.surname} пытается оценить лектора "
+          f"{lecturer2.name} {lecturer2.surname} по курсу '{invalid_course_2}'.")
+    print(f"   Результат: {error_2}")
+    print(f"   Причина: студент {student1.surname} не изучает курс '{invalid_course_2}'. "
+          f"Студент может оценивать лекторов только по тем курсам, которые посещает.\n")
+else:
+    print("2. Невозможно создать сценарий: все курсы лектора также изучаются студентом.\n")
 
 # --- Сценарий 3: Студент пытается оценить объект неверного типа ---
-# student1 пытается "оценить" проверяющего reviewer1, а метод rate_lecture принимает только Lecturer
+# Этот сценарий всегда работает, так как проверяет тип объекта
 error_3 = student1.rate_lecture(reviewer1, 'Python', 10)
 print(f"3. Студент {student1.name} {student1.surname} пытается оценить проверяющего "
       f"{reviewer1.name} {reviewer1.surname} по курсу 'Python'.")
@@ -251,12 +267,20 @@ print(f"   Результат: {error_3}")
 print(f"   Причина: в метод rate_lecture можно передавать только объект класса Lecturer. "
       f"Объект класса Reviewer не является лектором, поэтому оценка не может быть выставлена.\n")
 
-# --- Сценарий 4 (бонусный): Проверяющий пытается оценить студента, который не изучает курс ---
-# reviewer2 (Анна Смирнова) ведёт 'Python' и 'Java', а student1 изучает 'Python' и 'Git'
-# Курс 'Java' не изучается студентом student1
-error_4 = reviewer2.rate_hw(student1, 'Java', 8)
-print(f"4. Проверяющий {reviewer2.name} {reviewer2.surname} пытается оценить студента "
-      f"{student1.name} {student1.surname} по курсу 'Java'.")
-print(f"   Результат: {error_4}")
-print(f"   Причина: студент {student1.surname} не изучает курс 'Java'. "
-      f"Оценивать можно только студентов, которые проходят данный курс.")
+# --- Сценарий 4: Проверяющий оценивает студента по курсу, который студент не изучает ---
+# Находим курс, который проверяющий ведёт, но студент не изучает
+invalid_course_4 = None
+for course in reviewer2.courses_attached:
+    if course not in student1.courses_in_progress:
+        invalid_course_4 = course
+        break
+
+if invalid_course_4:
+    error_4 = reviewer2.rate_hw(student1, invalid_course_4, 8)
+    print(f"4. Проверяющий {reviewer2.name} {reviewer2.surname} пытается оценить студента "
+          f"{student1.name} {student1.surname} по курсу '{invalid_course_4}'.")
+    print(f"   Результат: {error_4}")
+    print(f"   Причина: студент {student1.surname} не изучает курс '{invalid_course_4}'. "
+          f"Оценивать можно только студентов, которые проходят данный курс.")
+else:
+    print("4. Невозможно создать сценарий: все курсы проверяющего также изучаются студентом.")
