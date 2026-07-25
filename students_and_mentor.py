@@ -177,6 +177,7 @@ reviewer1.courses_attached += ['Python', 'Git']
 reviewer2 = Reviewer('Анна', 'Смирнова')
 reviewer2.courses_attached += ['Python', 'Java']
 
+# --- Успешные сценарии ---
 # проверяющие оценивают студентов
 reviewer1.rate_hw(student1, 'Python', 9)
 reviewer1.rate_hw(student1, 'Python', 8)
@@ -216,3 +217,46 @@ avg_lecture_python = get_average_lecturers_grade(lecturers_list, 'Python')
 
 print(f'Средняя оценка студентов за ДЗ по курсу Python: {avg_hw_python}')
 print(f'Средняя оценка лекторов за лекции по курсу Python: {avg_lecture_python}')
+print()
+
+# ===================== ПРОВЕРКА ОШИБОК =====================
+print('\n=== Проверка некорректных оценок ===\n')
+
+# --- Сценарий 1: Проверяющий оценивает студента по курсу, который не ведёт ---
+# reviewer1 (Пётр Петров) ведёт 'Python' и 'Git', а student2 (Дмитрий Борисов) изучает 'Python' и 'Java'
+# Курс 'Java' не закреплён за проверяющим reviewer1
+error_1 = reviewer1.rate_hw(student2, 'Java', 10)
+print(f"1. Проверяющий {reviewer1.name} {reviewer1.surname} пытается оценить студента "
+      f"{student2.name} {student2.surname} по курсу 'Java'.")
+print(f"   Результат: {error_1}")
+print(f"   Причина: курс 'Java' не закреплён за проверяющим {reviewer1.surname}. "
+      f"Проверяющий может оценивать студентов только по тем курсам, которые ведёт.\n")
+
+# --- Сценарий 2: Студент оценивает лектора по курсу, который не изучает ---
+# student1 (Ольга Алёхина) изучает 'Python' и 'Git', а lecturer2 (Мария Сидорова) ведёт 'Python' и 'Java'
+# Курс 'Java' не изучается студентом student1
+error_2 = student1.rate_lecture(lecturer2, 'Java', 9)
+print(f"2. Студент {student1.name} {student1.surname} пытается оценить лектора "
+      f"{lecturer2.name} {lecturer2.surname} по курсу 'Java'.")
+print(f"   Результат: {error_2}")
+print(f"   Причина: студент {student1.surname} не изучает курс 'Java'. "
+      f"Студент может оценивать лекторов только по тем курсам, которые посещает.\n")
+
+# --- Сценарий 3: Студент пытается оценить объект неверного типа ---
+# student1 пытается "оценить" проверяющего reviewer1, а метод rate_lecture принимает только Lecturer
+error_3 = student1.rate_lecture(reviewer1, 'Python', 10)
+print(f"3. Студент {student1.name} {student1.surname} пытается оценить проверяющего "
+      f"{reviewer1.name} {reviewer1.surname} по курсу 'Python'.")
+print(f"   Результат: {error_3}")
+print(f"   Причина: в метод rate_lecture можно передавать только объект класса Lecturer. "
+      f"Объект класса Reviewer не является лектором, поэтому оценка не может быть выставлена.\n")
+
+# --- Сценарий 4 (бонусный): Проверяющий пытается оценить студента, который не изучает курс ---
+# reviewer2 (Анна Смирнова) ведёт 'Python' и 'Java', а student1 изучает 'Python' и 'Git'
+# Курс 'Java' не изучается студентом student1
+error_4 = reviewer2.rate_hw(student1, 'Java', 8)
+print(f"4. Проверяющий {reviewer2.name} {reviewer2.surname} пытается оценить студента "
+      f"{student1.name} {student1.surname} по курсу 'Java'.")
+print(f"   Результат: {error_4}")
+print(f"   Причина: студент {student1.surname} не изучает курс 'Java'. "
+      f"Оценивать можно только студентов, которые проходят данный курс.")
